@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import plotly.graph_objs as go
 import plotly.offline as pyo
 from datetime import datetime
+import trade
 
 def MACD (EMA12 , EMA26):
     MACDR = np.zeros_like(EMA12)
@@ -52,11 +53,24 @@ def print_plotflex(df, EMA12, EMA26, EMA100):
     fig.show()
 
 
-def print_MACD(MACD):
+def print_MACD(df, MACD):
     SIGNAL = EMA(MACD, 9)
-    plt.plot(SIGNAL)
-    plt.plot(MACD)
+    plt.plot(df['Date'],SIGNAL, label='Signal')
+    plt.plot(df['Date'],MACD, label='MACD')
+    plt.xticks(df['Date'][::500])
     plt.show()
+
+
+def print_MACDInteractive(df, MACD):
+    SIGNAL = EMA(MACD, 9)
+    trace1 = go.Scatter(x=df['Date'], y=SIGNAL, mode='lines', name='Signal')
+    trace2 = go.Scatter(x=df['Date'], y=MACD, mode='lines', name='MACD')
+    data = [trace1, trace2]
+    layout = go.Layout(title='MACD', xaxis={'title': 'Data'}, yaxis={'title': 'Wartość'})
+    fig = go.Figure(data=data, layout=layout)
+    fig.show()
+
+
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
@@ -68,8 +82,16 @@ if __name__ == '__main__':
     EMA26 = EMA(orginaldata, 26)
     EMA100 = EMA(orginaldata, 100)
     MACD = MACD(EMA12, EMA26)
-    print_MACD(MACD)
+    print_MACD(df, MACD)
+    print_MACDInteractive(df, MACD)
     print_plot(df, EMA12, EMA26, EMA100)
     print_plotflex(df, EMA12, EMA26, EMA100)
 
+    easyplayer = trade.Person(1000, 0.25, 0.95)
+    mediumplayer = trade.Person(1000, 0.5, 0.95)
+    riskplayer = trade.Person(1000, 7.5, 0.95)
 
+    for x in range(len(MACD)):
+        easyplayer.shouldbuy(MACD[x], orginaldata[x])
+        mediumplayer.shouldbuy(MACD[x], orginaldata[x])
+        riskplayer.shouldbuy(MACD[x], orginaldata[x])
