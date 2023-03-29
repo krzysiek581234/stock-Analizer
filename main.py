@@ -5,6 +5,7 @@ import plotly.graph_objs as go
 import plotly.offline as pyo
 from datetime import datetime
 import trade
+import  showplots
 
 def MACD (EMA12 , EMA26):
     MACDR = np.zeros_like(EMA12)
@@ -28,47 +29,18 @@ def EMA(arr, n):
         ema[value] = licznik/denominator
     return ema
 
-def print_plot(df, EMA12, EMA26, EMA100):
-    fig, ax = plt.subplots()
-    ax.plot(df['Date'], df['Close'], label='normal')
-    plt.xticks(df['Date'][::500])
-    ax.plot(EMA12, label='EMA12')
-    ax.plot(EMA26, label='EMA26')
-    ax.plot(EMA100, label='EMA100')
-    ax.set_xlabel('Date')
-    ax.set_ylabel('Price')
-    plt.legend(loc='upper left')
-    ax.set_title('AMD close Prices')
-    plt.show()
-
-import plotly.graph_objects as go
-
-def print_plotflex(df, EMA12, EMA26, EMA100):
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(x=df['Date'], y=df['Close'], name='normal'))
-    fig.add_trace(go.Scatter(x=df['Date'], y=EMA12, name='EMA12'))
-    fig.add_trace(go.Scatter(x=df['Date'], y=EMA26, name='EMA26'))
-    fig.add_trace(go.Scatter(x=df['Date'], y=EMA100, name='EMA100'))
-    fig.update_layout(title='AMD close Prices', xaxis_title='Date', yaxis_title='Price')
-    fig.show()
 
 
-def print_MACD(df, MACD):
-    SIGNAL = EMA(MACD, 9)
-    plt.plot(df['Date'],SIGNAL, label='Signal')
-    plt.plot(df['Date'],MACD, label='MACD')
-    plt.xticks(df['Date'][::500])
-    plt.show()
 
 
-def print_MACDInteractive(df, MACD):
-    SIGNAL = EMA(MACD, 9)
-    trace1 = go.Scatter(x=df['Date'], y=SIGNAL, mode='lines', name='Signal')
-    trace2 = go.Scatter(x=df['Date'], y=MACD, mode='lines', name='MACD')
-    data = [trace1, trace2]
-    layout = go.Layout(title='MACD', xaxis={'title': 'Data'}, yaxis={'title': 'Wartość'})
-    fig = go.Figure(data=data, layout=layout)
-    fig.show()
+
+# def printresult(df, easyplayer, mediumplayer, riskplayer):
+#     plt.plot(df['Date'],easyplayer.numberofShares, label='Signal')
+#     plt.plot(df['Date'],mediumplayer.numberofShares, label='MACD')
+#     plt.plot(df['Date'],riskplayer.numberofShares, label='MACD')
+#     plt.xticks(df['Date'][::500])
+#     plt.show()
+
 
 
 
@@ -82,16 +54,28 @@ if __name__ == '__main__':
     EMA26 = EMA(orginaldata, 26)
     EMA100 = EMA(orginaldata, 100)
     MACD = MACD(EMA12, EMA26)
-    print_MACD(df, MACD)
-    print_MACDInteractive(df, MACD)
-    print_plot(df, EMA12, EMA26, EMA100)
-    print_plotflex(df, EMA12, EMA26, EMA100)
+    #print_MACD(df, MACD)
+    #print_MACDInteractive(df, MACD)
+    #print_plot(df, EMA12, EMA26, EMA100)
+    #print_plotflex(df, EMA12, EMA26, EMA100)
 
-    easyplayer = trade.Person(1000, 0.25, 0.95)
-    mediumplayer = trade.Person(1000, 0.5, 0.95)
-    riskplayer = trade.Person(1000, 7.5, 0.95)
-
+    easyplayer = trade.Person(1000, 2, 0.95)
+    mediumplayer = trade.Person(1000, 4, 0.95)
+    riskplayer = trade.Person(1000, 8, 0.95)
+    moneyvalueation = []
     for x in range(len(MACD)):
         easyplayer.shouldbuy(MACD[x], orginaldata[x])
-        mediumplayer.shouldbuy(MACD[x], orginaldata[x])
-        riskplayer.shouldbuy(MACD[x], orginaldata[x])
+        moneyvalueation.append(easyplayer.numberofShares*orginaldata[x])
+        # print(easyplayer.numberofShares)
+        # print(easyplayer.money)
+        # print(easyplayer.moneytable)
+        #mediumplayer.shouldbuy(MACD[x], orginaldata[x])
+        #riskplayer.shouldbuy(MACD[x], orginaldata[x])
+    for x in range(len(MACD)):
+        easyplayer.sell(easyplayer.numberofShares, orginaldata[-1])
+    print(easyplayer.numberofShares)
+    print(easyplayer.money)
+    print(easyplayer.moneytable)
+
+    showplots.test(moneyvalueation, easyplayer.moneytable, df)
+    #printresult(df, easyplayer, mediumplayer, riskplayer)
